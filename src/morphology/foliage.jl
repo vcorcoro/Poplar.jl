@@ -41,7 +41,13 @@ Foliage
     Growth
     =====#
 
-    growthFoliage(NPP, pF) => NPP * pF ~ track(u"kg/ha/hr") # foliage
+    growthFoliage(NPP, pF) => NPP * pF ~ track(u"kg/ha/hr", when=NPP>0) # foliage
+
+	#=======================
+	Respiration from biomass
+	=======================#
+	
+	mRFoliage(NPP, Rp, Leaf_Rp) => -NPP * Leaf_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0)
 
     #========
     Mortality
@@ -72,8 +78,8 @@ Foliage
     Weight
     =====#
 
-    dWF(growthFoliage, N_stress, litterfall, deathFoliage, defoliation, thinning_WF, dSen, dBud) => begin
-        growthFoliage * N_stress - litterfall - deathFoliage - defoliation - thinning_WF - dSen + dBud
+    dWF(growthFoliage, N_stress, mRFoliage, litterfall, deathFoliage, defoliation, thinning_WF, dSen, dBud) => begin
+        growthFoliage * N_stress - mRFoliage - litterfall - deathFoliage - defoliation - thinning_WF - dSen + dBud
     end ~ track(u"kg/ha/hr")
 
     cumulative_WF(dWF) => begin
