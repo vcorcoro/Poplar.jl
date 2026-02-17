@@ -13,13 +13,13 @@
     Growth
     =====#
 
-    growthStem(NPP, pS) => NPP * pS ~ track(u"kg/ha/hr", when=NPP>0u"kg/ha/hr") 
+    growthStem(NPP, pS) => NPP * pS ~ track(u"kg/ha/hr", when=growthFlag) 
 
 	#=======================
 	Respiration from biomass
 	=======================#
 	
-	mRStem(NPP, Rp, Stem_Rp) => -NPP * Stem_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0u"kg/ha/hr")
+	mRStem(NPP, Rp, Stem_Rp) => -NPP * Stem_Rp / Rp ~ track(u"kg/ha/hr", when=!growthFlag)
 	
     #========
     Mortality
