@@ -87,9 +87,9 @@ Photosynthesis
         if NPP_type == 1 # using NPP/GPP ratio
             γ * GPP
         elseif NPP_type == 2 # using growth-maintenance respiration regime
-			if GPP - Rp > 0				# growth (NPP>0)
+			if GPP - Rp > 0u"kg/ha/hr"			# growth (NPP>0)
             	(GPP - Rp) * Yg 
-			else						# no growth (NPP<0)
+			else								# no growth (NPP<0)
 				GPP - Rp
 			end
         else
