@@ -19,13 +19,13 @@
 
     # NPP multiplied by root partition in BiomassPartition
     "Canopy root growth rate"
-    growthRoot(NPP, pR) => NPP * pR ~ track(u"kg/ha/hr", when=NPP>0) # root
+    growthRoot(NPP, pR) => NPP * pR ~ track(u"kg/ha/hr", when=NPP>0u"kg/ha/hr") # root
 
     #=======================
 	Respiration from biomass
 	=======================#
 	
-	mRRoot(NPP, Rp, Root_Rp) => -NPP * Root_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0)
+	mRRoot(NPP, Rp, Root_Rp) => -NPP * Root_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0u"kg/ha/hr")
 
     #========
     Mortality
