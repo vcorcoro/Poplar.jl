@@ -84,7 +84,11 @@ Photosynthesis
         if NPP_type == 1 # using NPP/GPP ratio
             γ * GPP
         elseif NPP_type == 2 # using growth-maintenance respiration regime
-            (GPP - Root_Rp - Stem_Rp - Leaf_Rp) * Yg
+			if GPP - Root_Rp - Stem_Rp - Leaf_Rp > 0		# growth (NPP>0)
+            	(GPP - Root_Rp - Stem_Rp - Leaf_Rp) * Yg 
+			else											# no growth (NPP<0)
+				GPP - Root_Rp - Stem_Rp - Leaf_Rp
+			end
         else
             error("Invalid calculation method: $calculation_method. Use 1 or 2 for ratio or respiration, respectively")
         end
