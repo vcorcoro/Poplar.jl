@@ -81,13 +81,15 @@ Photosynthesis
 
     "total maintenance respiration"
 	Rp(Root_Rp, Stem_Rp, Leaf_Rp) =>  Root_Rp + Stem_Rp + Leaf_Rp ~ track(u"kg/ha/hr")
+
+	growthFlag(GPP, Rp) => (GPP - Rp) > 0u"kg/ha/hr" ~ flag
 	
 	"Net primary production"
     NPP(GPP, γ, NPP_type, Rp, Yg) => begin
         if NPP_type == 1 # using NPP/GPP ratio
             γ * GPP
         elseif NPP_type == 2 # using growth-maintenance respiration regime
-			if GPP - Rp > 0u"kg/ha/hr"			# growth (NPP>0)
+			if growthFlag						# growth (NPP>0)
             	(GPP - Rp) * Yg 
 			else								# no growth (NPP<0)
 				GPP - Rp
