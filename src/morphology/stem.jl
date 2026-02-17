@@ -13,8 +13,14 @@
     Growth
     =====#
 
-    growthStem(NPP, pS) => NPP * pS ~ track(u"kg/ha/hr") 
+    growthStem(NPP, pS) => NPP * pS ~ track(u"kg/ha/hr", when=NPP>0) 
 
+	#=======================
+	Respiration from biomass
+	=======================#
+	
+	mRStem(NPP, Rp, Stem_Rp) => -NPP * Stem_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0)
+	
     #========
     Mortality
     ========#
@@ -27,7 +33,9 @@
     Weight
     =====#
 
-    dWS(growthStem, N_stress, deathStem, thinning_WS, dBud, coppicing, dShoot, root_conversion_efficiency) => growthStem * N_stress - deathStem - thinning_WS - dBud - coppicing + root_conversion_efficiency * dShoot ~ track(u"kg/ha/hr")
+    dWS(growthStem, N_stress, mRStem, deathStem, thinning_WS, dBud, coppicing, dShoot, root_conversion_efficiency) => begin
+		growthStem * N_stress - mRStem - deathStem - thinning_WS - dBud - coppicing + root_conversion_efficiency * dShoot 
+	end ~ track(u"kg/ha/hr")
     
     "Average stem mass"
     avStemMass(WS, stemNo) => WS / stemNo ~ track(u"kg")
