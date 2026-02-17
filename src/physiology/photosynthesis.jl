@@ -85,7 +85,7 @@ Photosynthesis
 	growthFlag(GPP, Rp) => (GPP - Rp) > 0u"kg/ha/hr" ~ flag
 	
 	"Net primary production"
-    NPP(GPP, γ, NPP_type, Rp, Yg) => begin
+    NPP(GPP, γ, NPP_type, Rp, Yg, growthFlag) => begin
         if NPP_type == 1 # using NPP/GPP ratio
             γ * GPP
         elseif NPP_type == 2 # using growth-maintenance respiration regime
