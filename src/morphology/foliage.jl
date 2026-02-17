@@ -41,13 +41,13 @@ Foliage
     Growth
     =====#
 
-    growthFoliage(NPP, pF) => NPP * pF ~ track(u"kg/ha/hr", when=NPP>0) # foliage
+    growthFoliage(NPP, pF) => NPP * pF ~ track(u"kg/ha/hr", when=NPP>0u"kg/ha/hr") # foliage
 
 	#=======================
 	Respiration from biomass
 	=======================#
 	
-	mRFoliage(NPP, Rp, Leaf_Rp) => -NPP * Leaf_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0)
+	mRFoliage(NPP, Rp, Leaf_Rp) => -NPP * Leaf_Rp / Rp ~ track(u"kg/ha/hr", when=NPP<0u"kg/ha/hr")
 
     #========
     Mortality
