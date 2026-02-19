@@ -19,7 +19,13 @@
 
     # NPP multiplied by root partition in BiomassPartition
     "Canopy root growth rate"
-    growthRoot(NPP, pR) => NPP * pR ~ track(u"kg/ha/hr") # root
+    growthRoot(NPP, pR) => NPP * pR ~ track(u"kg/ha/hr", when=growthFlag) # root
+
+    #=======================
+	Respiration from biomass
+	=======================#
+	
+	mRRoot(NPP, Rp, Root_Rp) => -NPP * Root_Rp / Rp ~ track(u"kg/ha/hr", when=!growthFlag)
 
     #========
     Mortality
@@ -53,7 +59,9 @@
     Weight
     =====#
     
-    dWR(growthRoot, N_stress, rootTurnover, deathRoot, thinning_WR, dShoot) => growthRoot * N_stress - rootTurnover - deathRoot - thinning_WR - dShoot ~ track(u"kg/ha/hr")
+    dWR(growthRoot, N_stress, mRRoot, rootTurnover, deathRoot, thinning_WR, dShoot) => begin
+        growthRoot * N_stress - mRRoot - rootTurnover - deathRoot - thinning_WR - dShoot 
+    end ~ track(u"kg/ha/hr")
     WR(dWR) ~ accumulate(u"kg/ha", init=iWR, min=0) # root drymass
     WR_ton(nounit(WR)) => WR / 1000 ~ track
 

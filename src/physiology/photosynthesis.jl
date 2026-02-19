@@ -79,12 +79,21 @@ Photosynthesis
     "Switch parameter to control NPP types"
     NPP_type => 1 ~ preserve(parameter)
 
-    "Net primary production"
-    NPP(GPP, γ, NPP_type, Root_Rp, Stem_Rp, Leaf_Rp, Yg) => begin
+    "total maintenance respiration"
+	Rp(Root_Rp, Stem_Rp, Leaf_Rp) =>  Root_Rp + Stem_Rp + Leaf_Rp ~ track(u"kg/ha/hr")
+
+	growthFlag(GPP, Rp) => (GPP - Rp) > 0u"kg/ha/hr" ~ flag
+	
+	"Net primary production"
+    NPP(GPP, γ, NPP_type, Rp, Yg, growthFlag) => begin
         if NPP_type == 1 # using NPP/GPP ratio
             γ * GPP
         elseif NPP_type == 2 # using growth-maintenance respiration regime
-            (GPP - Root_Rp - Stem_Rp - Leaf_Rp) * Yg
+			if growthFlag						# growth (NPP>0)
+            	(GPP - Rp) * Yg 
+			else								# no growth (NPP<0)
+				GPP - Rp
+			end
         else
             error("Invalid calculation method: $calculation_method. Use 1 or 2 for ratio or respiration, respectively")
         end
