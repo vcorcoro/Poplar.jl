@@ -47,22 +47,23 @@
     "Value of 'm1' when FR = 0"
     m0 => 0 ~ preserve(parameter)
 
-    "Stomatal response to VPD"
-    coeffCond => 0.05 ~ preserve(parameter, u"mbar^-1")
-    
-    "Soilwater modifier on root partitioning"
-    fSW(ASW, maxASW, SWconst, SWpower) => begin
-        1 / (1 + ((1 - (ASW / maxASW)) / SWconst) ^ SWpower)
-    end ~ track
+    # "Stomatal response to VPD"
+    # coeffCond => 0.05 ~ preserve(parameter, u"mbar^-1")
 
-    "VPD modifier on root partitioning"
-    fVPD(VPD, coeffCond) => begin
-        exp(-coeffCond * VPD)
-    end ~ track
+    # soil water no longer uses these variables
+    # "Soilwater modifier on root partitioning"
+    # fSW(ASW, maxASW, SWconst, SWpower) => begin
+    #     1 / (1 + ((1 - (ASW / maxASW)) / SWconst) ^ SWpower)
+    # end ~ track
+
+    # "VPD modifier on root partitioning"
+    # fVPD(VPD, coeffCond) => begin
+    #     exp(-coeffCond * VPD)
+    # end ~ track
 
     "Modifier for root partitioning based on VPD, SW, and Age"
-    fPhysiology(fVPD, fSW, fAge) => begin
-        min(fVPD, fSW) * fAge
+    fPhysiology(#=fVPD, fSW,=# fAge) => begin
+        # min(fVPD, fSW) * fAge
     end ~ track
 
     # TODO: Better variable name? Empirical value used in foliage to stem ratio.
@@ -100,7 +101,7 @@
     pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track
 
     # ratios for BBCH30
-    pR30(pRx, pRn, fAge) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
+    pR30(pRx, pRn, fPhysiology) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
     pS30(pR30, pFS) => (1 - pR30) / (1 + pFS) ~ track # stem partition
     pF30(pR30, pS30) => 1 - pR30 - pS30 ~ track # foliage partition
 
