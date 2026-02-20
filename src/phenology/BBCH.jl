@@ -21,8 +21,8 @@
         0.00 0.00 0.00 # BBCH00
         0.90 0.05 0.05 # BBCH10
         0.90 0.05 0.05 # BBCH11
-        pF30 pS30 pR30 # BBCH30
-        0.00 pS90 pR90 # BBCH90
+        0.20 0.50 0.30 # BBCH30
+        0.00 0.67 0.33 # BBCH90
     ] ~ tabulate(
         rows=(:BBCH00, :BBCH10, :BBCH11, :BBCH30, :BBCH90),
         columns=(:leaf, :stem, :root),
