@@ -103,7 +103,7 @@
     pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track
 
     # ratios for BBCH30
-    pR30(pRx, pRn, fPhysiology) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
+    pR30(pRx, pRn, fPhysiology, m1) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
     pS30(pR30, pFS) => (1 - pR30) / (1 + pFS) ~ track # stem partition
     pF30(pR30, pS30) => 1 - pR30 - pS30 ~ track # foliage partition
 
