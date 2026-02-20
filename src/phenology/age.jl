@@ -37,8 +37,8 @@
     # flag to check if nAge is 0. If nAge is 0, fAge is 1.
     flagAge(nAge) => nAge != 0 ~ flag
 
-    Empirical age-based modifier for physiology.
-    Used in another modifier variable, fPhysiology.
+    # Empirical age-based modifier for physiology.
+    # Used in another modifier variable, fPhysiology.
     "Age-based physiological modifier"
     fAge(standAge, maxAge, rAge, nAge) => begin
         (1 / (1 + (standAge / maxAge / rAge) ^ nAge)) 
