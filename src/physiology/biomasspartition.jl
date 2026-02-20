@@ -62,10 +62,11 @@
     # end ~ track
 
     "Modifier for root partitioning based on VPD, SW, and Age"
+    fPhysiology(fAge) ~ track
     # fPhysiology(fVPD, fSW, fAge) => begin
     #     min(fVPD, fSW) * fAge
     # end ~ track
-    fPhysiology(fAge) ~ track
+    
 
     # TODO: Better variable name? Empirical value used in foliage to stem ratio.
     m1(m0, FR) => m0 + (1 - m0) * FR ~ preserve
