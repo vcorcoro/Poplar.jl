@@ -37,6 +37,9 @@
     pfsPower(pFS2, pFS20) => log(pFS20 / pFS2) / log(20 / 2) ~ preserve
     
     pfsConst(pFS2, pfsPower) => pFS2 / 2 ^ pfsPower ~ preserve
+
+    "Maximum foliage:stem partitioning ratio"
+    pFSmax => 2 ~ preserve(parameter) # Hart 2015
     
     "Maximum fraction of NPP to roots"
     pRx => 0.34 ~ preserve(parameter)
@@ -100,7 +103,7 @@
     =================#
 
     "Ratio of foliage to stem parititioning"
-    pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track
+    pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track(max=pFSmax)
 
     # ratios for BBCH30
     pR30(pRx, pRn, fPhysiology, m1) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
