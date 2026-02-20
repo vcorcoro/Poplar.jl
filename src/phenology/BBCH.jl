@@ -1,32 +1,31 @@
 @system BBCH begin
-
     
-    # # Determine BBCH stage
-    # BBCH_stage(budburst, leafexpansion, senescent, dormant) => begin
-    #     if dormant
-    #         :BBCH00
-    #     elseif budburst
-    #         :BBCH10
-    #     elseif leafexpansion
-    #         :BBCH11
-    #     elseif senescent
-    #         :BBCH90
-    #     else
-    #         :BBCH30 # shoot development
-    #     end
-    # end ~ track::Symbol
+    # Determine BBCH stage
+    BBCH_stage(budburst, leafexpansion, senescent, dormant) => begin
+        if dormant
+            :BBCH00
+        elseif budburst
+            :BBCH10
+        elseif leafexpansion
+            :BBCH11
+        elseif senescent
+            :BBCH90
+        else
+            :BBCH30 # shoot development
+        end
+    end ~ track::Symbol
 
-    # # Carbon partitioning table corresponding to BBCH stages.
-    # BBCH_table(pF30, pS30, pR30, pR90, pS90) => [
-    #   # leaf stem root
-    #     0.00 0.00 0.00 # BBCH00
-    #     0.90 0.05 0.05 # BBCH10
-    #     0.90 0.05 0.05 # BBCH11
-    #     pF30 pS30 pR30 # BBCH30
-    #     0.00 pS90 pR90 # BBCH90
-    # ] ~ tabulate(
-    #     rows=(:BBCH00, :BBCH10, :BBCH11, :BBCH30, :BBCH90),
-    #     columns=(:leaf, :stem, :root),
-    #     parameter
-    # )
+    # Carbon partitioning table corresponding to BBCH stages.
+    BBCH_table(pF30, pS30, pR30, pR90, pS90) => [
+      # leaf stem root
+        0.00 0.00 0.00 # BBCH00
+        0.90 0.05 0.05 # BBCH10
+        0.90 0.05 0.05 # BBCH11
+        pF30 pS30 pR30 # BBCH30
+        0.00 pS90 pR90 # BBCH90
+    ] ~ tabulate(
+        rows=(:BBCH00, :BBCH10, :BBCH11, :BBCH30, :BBCH90),
+        columns=(:leaf, :stem, :root),
+        parameter
+    )
 end
