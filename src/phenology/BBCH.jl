@@ -16,11 +16,11 @@
     end ~ track::Symbol
 
     # Carbon partitioning table corresponding to BBCH stages.
-    BBCH_table => [
+    BBCH_table(pF30, pS30, pR30, pR90, pS90) => [
       # leaf stem root
         0.00 0.00 0.00 # BBCH00
+        0.90 0.05 0.05 # BBCH10
         0.90 0.05 0.05 # BBCH11
-        0.90 0.05 0.05 # BBCH19
         0.20 0.50 0.30 # BBCH30
         0.00 0.67 0.33 # BBCH90
     ] ~ tabulate(

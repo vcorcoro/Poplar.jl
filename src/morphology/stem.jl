@@ -18,8 +18,8 @@
 	#=======================
 	Respiration from biomass
 	=======================#
-	
-	mRStem(NPP, Rp, Stem_Rp) => -NPP * Stem_Rp / Rp ~ track(u"kg/ha/hr", when=!growthFlag)
+
+    mRStem(NPP, Rp, Stem_Rp) => abs(NPP * Stem_Rp / Rp) ~ track(u"kg/ha/hr", when=!growthFlag)
 	
     #========
     Mortality
