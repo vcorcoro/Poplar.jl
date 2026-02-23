@@ -1,29 +1,11 @@
 @system BiomassPartition begin
 
-    # "Root partitioning proportion"
-    # pR(BBCH_stage, BBCH_table) => begin
-    #     BBCH_table[BBCH_stage].root
-    #     # (pRx * pRn) / (pRn + (pRx - pRn) * fPhysiology * m1) 
-    # end ~ track # root partition
-
-    # "Stem partitioning proportion"
-    # pS(BBCH_stage, BBCH_table) => begin
-    #     BBCH_table[BBCH_stage].stem
-    #     # (1 - pR) / (1 + pFS)
-    # end ~ track # stem partition
-
-    # "Foliage paritioning proportion"
-    # pF(BBCH_stage, BBCH_table) => begin
-    #     BBCH_table[BBCH_stage].leaf
-    #     # 1 - pR - pS # foliage partition
-    #     # (1 - pR) / (1 + (1 / pFS))
-    # end ~ track
-
-    # IGNORE ENTIRE CODE BELOW. OBSOLETE AFTER INCLUSION OF CARBON PARTITIONING TABLE.
-    
     #===========
      Parameters
     ===========#
+    
+    "Switch parameter to control partitioning type"
+    partition_type => 1 ~ preserve(parameter) # 1 for BBCH, 2 for allometric
     
     "Fertility rating"
     FR => 0.4582 ~ preserve(parameter) # 
@@ -105,20 +87,20 @@
     "Ratio of foliage to stem parititioning"
     pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track(max=pFSmax)
 
-    # ratios for BBCH30
+    # ratios for BBCH30 (shoot development)
     pR30(pRx, pRn, fPhysiology, m1) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
     pS30(pR30, pFS) => (1 - pR30) / (1 + pFS) ~ track # stem partition
     pF30(pR30, pS30) => 1 - pR30 - pS30 ~ track # foliage partition
 
-    # ratios for BBCH90
+    # ratios for BBCH90 (senescent)
     pR90(pR30, pF30) => pR30 + pF30/2 ~ track
     pS90(pR90) => 1 - pR90 ~ track
 
     "Root partitioning proportion"
-    pR(BBCH_stage, BBCH_table, pR30, pR90) => begin
-        if BBCH_stage == :BBCH30
+    pR(partition_type, BBCH_stage, BBCH_table, pR30, pR90) => begin
+        if partition_type == 2 && BBCH_stage == :BBCH30
             pR30
-        elseif BBCH_stage == :BBCH90
+        elseif partition_type == 2 && BBCH_stage == :BBCH90
             pR90
         else
             BBCH_table[BBCH_stage].root
@@ -126,10 +108,10 @@
     end ~ track # root partition
 
     "Stem partitioning proportion"
-    pS(BBCH_stage, BBCH_table, pS30, pS90) => begin
-        if BBCH_stage == :BBCH30
+    pS(partition_type, BBCH_stage, BBCH_table, pS30, pS90) => begin
+        if partition_type == 2 && BBCH_stage == :BBCH30
             pS30
-        elseif BBCH_stage == :BBCH90
+        elseif partition_type == 2 && BBCH_stage == :BBCH90
             pS90
         else
             BBCH_table[BBCH_stage].stem
@@ -137,8 +119,8 @@
     end ~ track # stem partition
 
     "Foliage paritioning proportion"
-    pF(BBCH_stage, BBCH_table, pF30) => begin
-        if BBCH_stage == :BBCH30
+    pF(partition_type, BBCH_stage, BBCH_table, pF30) => begin
+        if partition_type == 2 && BBCH_stage == :BBCH30
             pF30
         else
             BBCH_table[BBCH_stage].leaf

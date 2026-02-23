@@ -82,7 +82,7 @@ Photosynthesis
     "total maintenance respiration"
 	Rp(Root_Rp, Stem_Rp, Leaf_Rp) =>  Root_Rp + Stem_Rp + Leaf_Rp ~ track(u"kg/ha/hr")
 
-	growthFlag(GPP, Rp) => (GPP - Rp) > 0u"kg/ha/hr" ~ flag
+	growthFlag(GPP, Rp) => GPP > Rp ~ flag
 	
 	"Net primary production"
     NPP(GPP, γ, NPP_type, Rp, Yg, growthFlag) => begin

@@ -47,7 +47,7 @@ Foliage
 	Respiration from biomass
 	=======================#
 	
-	mRFoliage(NPP, Rp, Leaf_Rp) => -NPP * Leaf_Rp / Rp ~ track(u"kg/ha/hr", when=!growthFlag)
+	mRFoliage(NPP, Rp, Leaf_Rp) => abs(NPP * Leaf_Rp / Rp) ~ track(u"kg/ha/hr", when=!growthFlag)
 
     #========
     Mortality

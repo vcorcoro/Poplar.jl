@@ -25,7 +25,7 @@
 	Respiration from biomass
 	=======================#
 	
-	mRRoot(NPP, Rp, Root_Rp) => -NPP * Root_Rp / Rp ~ track(u"kg/ha/hr", when=!growthFlag)
+    mRRoot(NPP, Rp, Root_Rp) => abs(NPP * Root_Rp / Rp) ~ track(u"kg/ha/hr", when=!growthFlag)
 
     #========
     Mortality
