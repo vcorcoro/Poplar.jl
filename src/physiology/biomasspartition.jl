@@ -5,7 +5,7 @@
     ===========#
     
     "Switch parameter to control partitioning type"
-    partition_type => 1 ~ preserve(parameter) # 1 for BBCH, 2 for allometric
+    partition_type => 1 ~ preserve(parameter) # 1 for BBCH, 2 for DBH allometric, 3 for VI allometric
     
     "Fertility rating"
     FR => 0.4582 ~ preserve(parameter) # 
@@ -22,6 +22,9 @@
 
     "Maximum foliage:stem partitioning ratio"
     pFSmax => 2 ~ preserve(parameter) # Hart 2015
+
+    "Minimum foliage:stem partitioning ratio"
+    pFSmin => 0.1 ~ preserve(parameter) # limit based on range of calibration from Pontailler (1997)
     
     "Maximum fraction of NPP to roots"
     pRx => 0.34 ~ preserve(parameter)
@@ -83,9 +86,31 @@
     #=================
     Paritioning Ratios
     =================#
+    
+    # ratio of foliage to stem partitioning based on DBH allometry (original 3PG)
+    pFS_dbh(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track
+
+    # ratio of foliage to stem partitioning based on VI allometry (Hart, 2015)
+    # to account for regrowth after winter defoliation, increase pFS to pFSmax
+    # if foliage mass is below target -- redundant to leafexpansion stage?
+    pFS_vi(avStemMass_g, avFoliageMass, avWF_VI, pFSmax, BBCH_stage) => begin
+        if avFoliageMass < avWF_VI && BBCH_stage == :BBCH30
+            pFSmax
+        else
+            avWF_VI / avStemMass_g 
+        end
+    end ~ track
 
     "Ratio of foliage to stem parititioning"
-    pFS(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track(max=pFSmax)
+    pFS(partition_type, pFS_dbh, pFS_vi) => begin
+        if partition_type == 2 
+            pFS_dbh
+        elseif partition_type == 3
+            pFS_vi
+        else
+            0   # pFS not used if partition_type = 1
+        end
+    end ~ track(max=pFSmax, min=pFSmin)
 
     # ratios for BBCH30 (shoot development)
     pR30(pRx, pRn, fPhysiology, m1) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
@@ -98,9 +123,9 @@
 
     "Root partitioning proportion"
     pR(partition_type, BBCH_stage, BBCH_table, pR30, pR90) => begin
-        if partition_type == 2 && BBCH_stage == :BBCH30
+        if partition_type != 1 && BBCH_stage == :BBCH30
             pR30
-        elseif partition_type == 2 && BBCH_stage == :BBCH90
+        elseif partition_type != 1 && BBCH_stage == :BBCH90
             pR90
         else
             BBCH_table[BBCH_stage].root
@@ -109,9 +134,9 @@
 
     "Stem partitioning proportion"
     pS(partition_type, BBCH_stage, BBCH_table, pS30, pS90) => begin
-        if partition_type == 2 && BBCH_stage == :BBCH30
+        if partition_type != 1 && BBCH_stage == :BBCH30
             pS30
-        elseif partition_type == 2 && BBCH_stage == :BBCH90
+        elseif partition_type != 1 && BBCH_stage == :BBCH90
             pS90
         else
             BBCH_table[BBCH_stage].stem
@@ -120,7 +145,7 @@
 
     "Foliage paritioning proportion"
     pF(partition_type, BBCH_stage, BBCH_table, pF30) => begin
-        if partition_type == 2 && BBCH_stage == :BBCH30
+        if partition_type != 1 && BBCH_stage == :BBCH30
             pF30
         else
             BBCH_table[BBCH_stage].leaf
