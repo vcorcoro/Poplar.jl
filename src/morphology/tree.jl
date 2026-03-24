@@ -103,7 +103,7 @@ include("root.jl")
     "Mean volume increment per hectare"
     MAI(standVol, standAge) => ((standAge > 0) ? (standVol / standAge) : 0) ~ track(u"m^3/ha")
 
-    dStemNo(mortality, thinning) => -mortality - thinning ~ track(u"ha^-1/hr")
+    dStemNo(mortality, thinning, dShootNo) => -mortality - thinning + dShootNo ~ track(u"ha^-1/hr")
     
     stemNo(dStemNo) ~ accumulate(init=iStemNo, u"ha^-1")
 
@@ -114,4 +114,34 @@ include("root.jl")
     W_ton(nounit(W)) => W / 1000 ~ track 
 
     W_lim(W, step) => W / step ~ track(u"kg/ha/hr")
+
+    #===========
+    Volume Index (Hart, 2015)
+    ===========#
+    
+    "power in volume index-drymass relationship"
+    γDM => 0.887 ~ preserve(parameter)
+
+    "constant in volume index-drymass relationsip"
+    βDM => 161.5 ~ preserve(parameter)
+
+    "power in volume index-leaf area relationship"
+    γLA => 0.496 ~ preserve(parameter)
+
+    "constant in volume index-leaf area relationship"
+    βLA => exp(-0.273) ~ preserve(parameter)
+
+    "average stem mass in grams"
+    avStemMass_g(avStemMass) ~ track(u"g")
+
+    "Volume index"
+    VI(nounit(avStemMass_g), γDM, βDM) => begin
+        (avStemMass_g / βDM)^(1 / γDM)
+    end ~ track
+
+    "Foliage weight per tree predicted from VI"
+    avWF_VI(VI, γLA, βLA, SLA) => begin
+        βLA * VI ^ γLA * u"m^2" / SLA
+    end ~ track(u"g")
+
 end
