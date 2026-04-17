@@ -76,6 +76,8 @@ Photosynthesis
     "Growth yield"
     Yg => 0.75 ~ preserve(parameter)
 
+    # 1--constant NPP:GPP ratio (recommended with constant allocation); 
+    # 2--dynamic respiration (recommended with allometric allocation types)
     "Switch parameter to control NPP types"
     NPP_type => 1 ~ preserve(parameter)
 
@@ -95,18 +97,11 @@ Photosynthesis
 				GPP - Rp
 			end
         else
-            error("Invalid calculation method: $calculation_method. Use 1 or 2 for ratio or respiration, respectively")
+            @error "Invalid NPP_type: $NPP_type. Use 1 or 2 for ratio or respiration, respectively"
         end
     end ~ track(u"kg/ha/hr")
-    #NPP(GPP, Root_Rp, Stem_Rp, Leaf_Rp) => begin
-    #    GPP - Root_Rp - Stem_Rp - Leaf_Rp
-    #end ~ track(u"kg/ha/hr")  
-    #NPP(γ, GPP) => begin
-    #    γ*GPP
-    #end ~ track(u"kg/ha/hr")
 
     NPP_ac(NPP) ~ accumulate(u"kg/ha")
-    # NPP_annual(NPP_ac) ~ remember(when=dormant, u"g/ha")
 
     GPP_ac(GPP) ~ accumulate(u"kg/ha")
 
