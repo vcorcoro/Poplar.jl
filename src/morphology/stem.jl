@@ -39,6 +39,9 @@
     
     "Average stem mass"
     avStemMass(WS, stemNo) => WS / stemNo ~ track(u"kg")
+
+    "Average stem mass in grams"
+    avStemMass_g(avStemMass) ~ track(u"g")
     
     root_conversion_efficiency_cutting => .6  ~ preserve(parameter)
     

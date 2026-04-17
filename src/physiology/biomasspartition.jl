@@ -4,21 +4,16 @@
      Parameters
     ===========#
     
+    # 1--constant; 2--allometric DBH (original 3PG); 3--allometric VI (Hart, 2015)
     "Switch parameter to control partitioning type"
-    partition_type => 1 ~ preserve(parameter) # 1 for BBCH, 2 for DBH allometric, 3 for VI allometric
+    partition_type => 1 ~ preserve(parameter)
     
+    # Parameters for  both allometric allocation types
     "Fertility rating"
     FR => 0.4582 ~ preserve(parameter) # 
-
-    "Foliage:stem partitioning ratio at D=2cm"
-    pFS2 => 0.8567 ~ preserve(parameter)
     
-    "Foliage:stem partitioning ratio at D=20cm"
-    pFS20 => 0.0590 ~ preserve(parameter)
-    
-    pfsPower(pFS2, pFS20) => log(pFS20 / pFS2) / log(20 / 2) ~ preserve
-    
-    pfsConst(pFS2, pfsPower) => pFS2 / 2 ^ pfsPower ~ preserve
+    "Value of 'm1' when FR = 0"
+    m0 => 0 ~ preserve(parameter)
 
     "Maximum foliage:stem partitioning ratio"
     pFSmax => 2 ~ preserve(parameter) # Hart 2015
@@ -32,8 +27,17 @@
     "Minimum fraction of NPP to roots"
     pRn => 0.13 ~ preserve(parameter)
 
-    "Value of 'm1' when FR = 0"
-    m0 => 0 ~ preserve(parameter)
+    
+    # Parameters for DBH based allocation
+    "Foliage:stem partitioning ratio at D=2cm"
+    pFS2 => 0.8567 ~ preserve(parameter)
+    
+    "Foliage:stem partitioning ratio at D=20cm"
+    pFS20 => 0.0590 ~ preserve(parameter)
+    
+    pfsPower(pFS2, pFS20) => log(pFS20 / pFS2) / log(20 / 2) ~ preserve
+    
+    pfsConst(pFS2, pfsPower) => pFS2 / 2 ^ pfsPower ~ preserve
 
     # "Stomatal response to VPD"
     # coeffCond => 0.05 ~ preserve(parameter, u"mbar^-1")
@@ -91,26 +95,46 @@
     pFS_dbh(pfsConst, nounit(avDBH), pfsPower) => pfsConst * avDBH ^ pfsPower ~ track
 
     # ratio of foliage to stem partitioning based on VI allometry (Hart, 2015)
-    # to account for regrowth after winter defoliation, increase pFS to pFSmax
-    # if foliage mass is below target -- redundant to leafexpansion stage?
-    pFS_vi(avStemMass_g, avFoliageMass, avWF_VI, pFSmax, BBCH_stage) => begin
-        if avFoliageMass < avWF_VI && BBCH_stage == :BBCH30
-            pFSmax
-        else
-            avWF_VI / avStemMass_g 
-        end
+    pFS_vi(avStemMass_g, avTargetWF_vi) => begin
+        avTargetWF_vi / avStemMass_g 
     end ~ track
 
+    # to account for regrowth after winter defoliation, increase pFS to pFSmax
+    # if foliage mass is below target
+    b_pfs => 0.1 ~ preserve(parameter, u"kg")
     "Ratio of foliage to stem parititioning"
-    pFS(partition_type, pFS_dbh, pFS_vi) => begin
-        if partition_type == 2 
-            pFS_dbh
+    pFS(partition_type, pFS_dbh, pFS_vi, pFSmax, avFoliageMass, avTargetWF, BBCH_stage, b_pfs) => begin
+        if partition_type == 1
+            pFS_star = 0 # pFS not used if partition_type = 1
+        elseif partition_type == 2 
+            pFS_star = pFS_dbh
         elseif partition_type == 3
-            pFS_vi
+            pFS_star = pFS_vi
         else
-            0   # pFS not used if partition_type = 1
+            @error "Invalid partition_type: $partition_type. Use 1, 2 or 3 for constant, DBH or VI, respectively"  
+        end
+        if BBCH_stage == :BBCH30
+            (pFSmax - pFS_star) * (avTargetWF - avFoliageMass) / (avTargetWF - avFoliageMass + b_pfs) + pFS_star
+            # pFSmax + (pFS_star - pFSmax) * avFoliageMass / avTargetWF
+        else
+            pFS_star
         end
     end ~ track(max=pFSmax, min=pFSmin)
+    # pFS(partition_type, pFS_dbh, pFS_vi, pFSmax, avFoliageMass, avTargetWF, BBCH_stage) => begin
+    #     if partition_type == 1
+    #         0 # pFS not used if partition_type = 1
+    #     elseif (partition_type == 2 || partition_type == 3) 
+    #         if avFoliageMass < avTargetWF && BBCH_stage == :BBCH30
+    #             pFSmax
+    #         elseif partition_type == 2 
+    #             pFS_dbh
+    #         elseif partition_type == 3
+    #             pFS_vi
+    #         end
+    #     else
+    #         @error "Invalid partition_type: $partition_type. Use 1, 2 or 3 for constant, DBH or VI, respectively"  
+    #     end
+    # end ~ track(max=pFSmax, min=pFSmin)
 
     # ratios for BBCH30 (shoot development)
     pR30(pRx, pRn, fPhysiology, m1) => pRx * pRn / (pRn + ( pRx - pRn) * fPhysiology * m1) ~ track # root partition
