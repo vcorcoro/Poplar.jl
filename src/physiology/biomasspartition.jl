@@ -101,7 +101,7 @@
 
     # to account for regrowth after winter defoliation, increase pFS to pFSmax
     # if foliage mass is below target
-    b_pfs => 0.1 ~ preserve(parameter, u"kg")
+    b_pfs: pfs_smoothing_factor => 0.1 ~ preserve(parameter, u"kg")
     "Ratio of foliage to stem parititioning"
     pFS(partition_type, pFS_dbh, pFS_vi, pFSmax, avFoliageMass, avTargetWF, BBCH_stage, b_pfs) => begin
         if partition_type == 1
@@ -113,7 +113,7 @@
         else
             @error "Invalid partition_type: $partition_type. Use 1, 2 or 3 for constant, DBH or VI, respectively"  
         end
-        if BBCH_stage == :BBCH30
+        if BBCH_stage == :BBCH30 && avTargetWF > avFoliageMass
             (pFSmax - pFS_star) * (avTargetWF - avFoliageMass) / (avTargetWF - avFoliageMass + b_pfs) + pFS_star
             # pFSmax + (pFS_star - pFSmax) * avFoliageMass / avTargetWF
         else
