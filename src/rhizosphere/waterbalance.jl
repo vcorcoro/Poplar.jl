@@ -54,6 +54,17 @@ Transpiration
     "Daily drainage proportion"
     DRp: daily_drainage => 0.1 ~ preserve(parameter, u"cm^3/cm^3/d")
 
+    "Soil water constant"
+    cθ(soil_table, soil_class) => begin
+        soil_table[Symbol(soil_class)].cθ
+    end ~ preserve(parameter)
+
+    "Soil water power"
+    nθ(soil_table, soil_class) => begin
+        soil_table[Symbol(soil_class)].nθ
+    end ~ preserve(parameter)
+
+    # Replaced with cθ and nθ from soil table -- 4/28/26 CC
     # "Moisture ratio deficit for fTheta = 0.5"
     # SWconst0 => 0.7 ~ preserve(parameter)
     
@@ -222,14 +233,22 @@ Transpiration
     
     # Relative drought factor from CROPGRO. Used for N_uptake_conversion_factor.
     # Captures water stress due to both drought and water logging through reduction in stomatal conductance
-    "Relative water stress factor"
-    water_stress(SW, minSW, field_capacity, soil_saturation, WP, wls) => begin
+    "Relative water content factor"
+    rθ(SW, minSW, field_capacity, soil_saturation, WP, wls) => begin
         if SW > field_capacity
             1.0 - ((SW - field_capacity) / (soil_saturation - field_capacity)) * wls
         else
             1 * ((SW - WP) / (field_capacity - WP))
         end
     end ~ track(min=0.1, max=1) 
+
+    # TODO: OK to use this curve for N uptake instead of above version? soil evaporation? -- 4/28/26 CC
+    # fθ from 3PG with additional water logging effect
+    # cθ and nθ shift curves for differnt soil types, reflecting hydraulic properties (Landsberg & Waring, 1997)
+    "Relative water stress factor"
+    water_stress(rθ, cθ, nθ) => begin
+        1 / (1 + ((1 - rθ) / cθ)^nθ)
+    end ~ track
         
     # annual cumulative water usage for comparing WUE
     IR_ac(irrigation) ~ accumulate(u"L/ha")
