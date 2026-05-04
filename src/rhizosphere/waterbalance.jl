@@ -64,7 +64,7 @@ Transpiration
         soil_table[Symbol(soil_class)].nθ
     end ~ preserve(parameter)
 
-    # Replaced with cθ and nθ from soil table -- 4/28/26 CC
+    #=== Replaced with cθ and nθ from soil table -- 4/28/26 CC ===
     # "Moisture ratio deficit for fTheta = 0.5"
     # SWconst0 => 0.7 ~ preserve(parameter)
     
@@ -78,7 +78,7 @@ Transpiration
     # SWpower(soil_class, SWpower0) => begin
     #     ((Int(soil_class) > 0) ? (11 - 2 * Int(c)) : (SWpower0))
     # end ~ preserve
-
+    ==============================================================#
     # fc => 0.5 ~ preserve(parameter) # not used
 
     "Proportion of rain intercepted"
@@ -89,7 +89,7 @@ Transpiration
     "Intercepted rain"
     rainInterception(interception, rain) => interception * rain ~ track(u"mm/hr")
 
-    "Drainage"
+    "Drainage rate"
     drainage(SW, field_capacity, DRp) => begin
         (SW - field_capacity) * DRp
     end ~ track(u"mm/hr", min=0)
@@ -99,9 +99,10 @@ Transpiration
         rain - rainInterception + irrigation - transpiration - drainage
     end ~ track(u"mm/hr", min=0)
     
+    # Changed to sigmoidal -- modeling meeting 5/1/26
     "Soil surface evaporation modifier"
-    beta(SW, WP, field_capacity) => begin
-        (SW - WP) / (field_capacity - WP)
+    beta(SW, WP, field_capacity, cθ, nθ) => begin
+        1 / (1 + ((1 - ((SW - WP) / (field_capacity - WP))) / cθ)^nθ) 
     end ~ track
 
     "Soil surface evaporation"
@@ -146,19 +147,25 @@ Transpiration
         (1 - pool_fraction) * excessSW
     end ~ track(u"mm/hr")
     
+    "Hourly net change in soil water content"
     dSW(dPool, evapotranspiration, irrigation, rain, drainage) => begin
          -dPool - evapotranspiration - drainage + irrigation + rain
     end ~ track(u"mm/hr")
     
     flag_transpiration(transpiration) => transpiration > 0u"mm/hr" ~ flag
 
+    #=== Not used -- 5/1/26 CC ===
     "Production modifier for GPP"
     transpScaleFactor(evapotranspiration, potential_evapotranspiration) => begin
         evapotranspiration / potential_evapotranspiration
     end ~ track(when=flag_transpiration, init=1)
+    =============================#
     
+    "Soil water content"
     SW(dSW) ~ accumulate(u"mm", init=iSW, min=minSW, max=soil_saturation)
+
     pool(dPool) ~ accumulate(u"mm")
+
     runoff(dRunoff) ~ accumulate(u"mm")
 
     # ASW and MaxASW and pool in mm/hr
@@ -166,33 +173,37 @@ Transpiration
     maxSWhour(soil_saturation) => soil_saturation / u"d" ~ track(u"mm/hr")
     poolHour(pool) => pool / u"d" ~ track(u"mm/hr")
 
-    "Irrigation based on profiling VWC for Slit Loam"
     soil_depth => 2000 ~ preserve(parameter, u"mm") #Poplar rooting depth; soil depth for water balance
-    SLs => 0.486 ~ preserve(parameter) # Silt Loam - Saturated volumetric water content
-    SLr => 0.05 ~ preserve(parameter) # Silt Loam - Residual volumetric water content
-
+    
+    "Volumetric water content"
     VWC(SW, soil_depth) => begin
         SW / soil_depth
-    end ~ track(max = SLs)
+    end ~ track
+
+    #=== NOT USED -- 5/1/26 CC ===
+    "Irrigation based on profiling VWC for Slit Loam"
+    SLs => 0.486 ~ preserve(parameter) # Silt Loam - Saturated volumetric water content
+    SLr => 0.05 ~ preserve(parameter) # Silt Loam - Residual volumetric water content
 
     "Calculate related water content"
     RWC(SLs, SLr, VWC) => begin
         (VWC - SLr) / (SLs - SLr)
     end ~ track
 
-    # "Field capacity as VWC"
-    # FC => 0.330 ~ preserve(parameter) # Field capacity for Slit Loam
-    #FC(field_capacity, soil_depth) => begin 
-    #    (field_capacity / soil_depth) 
-    #end~ track
+    "Field capacity as VWC"
+    FC => 0.330 ~ preserve(parameter) # Field capacity for Slit Loam
+    FC(field_capacity, soil_depth) => begin 
+       (field_capacity / soil_depth) 
+    end~ track
 
-    # "wilting point as VWC"
-    # WP => 0.133 ~ preserve(parameter) # Wilting point for Slit Loam
-    #WP(wilting_point, soil_depth) => begin 
-    #    (field_capacity / soil_depth) 
-    #end~ track
+    "wilting point as VWC"
+    WP => 0.133 ~ preserve(parameter) # Wilting point for Slit Loam
+    WP(wilting_point, soil_depth) => begin 
+       (field_capacity / soil_depth) 
+    end~ track
+    =============================#
 
-       "Irrigation control parameters"
+    "Irrigation control parameters"
     irrigation_start_level => 1 ~ preserve(parameter) # as percent of ASW + WP
     irrigation_end_level => 1 ~ preserve(parameter) # as percent of ASW + WP
     irrigation_rate => 0.5 ~ preserve(parameter, u"mm/hr") # Irrigation rate mm/hr
@@ -233,7 +244,7 @@ Transpiration
     
     # Relative drought factor from CROPGRO. Used for N_uptake_conversion_factor.
     # Captures water stress due to both drought and water logging through reduction in stomatal conductance
-    "Relative water content factor"
+    "Relative soil water content factor"
     rθ(SW, minSW, field_capacity, soil_saturation, WP, wls) => begin
         if SW > field_capacity
             1.0 - ((SW - field_capacity) / (soil_saturation - field_capacity)) * wls
@@ -242,10 +253,9 @@ Transpiration
         end
     end ~ track(min=0.1, max=1) 
 
-    # TODO: OK to use this curve for N uptake instead of above version? soil evaporation? -- 4/28/26 CC
     # fθ from 3PG with additional water logging effect
     # cθ and nθ shift curves for differnt soil types, reflecting hydraulic properties (Landsberg & Waring, 1997)
-    "Relative water stress factor"
+    "Relative soil water stress factor"
     water_stress(rθ, cθ, nθ) => begin
         1 / (1 + ((1 - rθ) / cθ)^nθ)
     end ~ track
