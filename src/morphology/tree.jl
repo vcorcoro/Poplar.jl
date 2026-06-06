@@ -14,6 +14,9 @@ include("root.jl")
     iW(iWS, iWF, iWR) => iWS + iWF + iWR ~ preserve(u"kg/ha")
 
     "Initial tree count"
+    iStumpNo => 1000 ~ preserve(parameter, u"ha^-1")
+
+    "Initial stem count"
     iStemNo => 1000 ~ preserve(parameter, u"ha^-1")
 
     # Branch and bark fraction

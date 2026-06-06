@@ -101,8 +101,8 @@ Transpiration
     
     # Changed to sigmoidal -- modeling meeting 5/1/26
     "Soil surface evaporation modifier"
-    beta(SW, WP, field_capacity, cθ, nθ) => begin
-        1 / (1 + ((1 - ((SW - WP) / (field_capacity - WP))) / cθ)^nθ) 
+    beta(rθ_def, cθ, nθ) => begin
+        1 / (1 + ((1 - rθ_def) / cθ)^nθ) 
     end ~ track
 
     "Soil surface evaporation"
@@ -242,16 +242,29 @@ Transpiration
     # scales water stress from excess water - waterlogging tolerant (0) to sensitive (1)
     wls: waterlogging_sensitivity => 0 ~ preserve(parameter, min=0, max=1)
     
+    "Relative soil water saturation"
+    rθ_sat(SW, soil_saturation, field_capacity, wls) => begin
+        1.0 - ((SW - field_capacity) / (soil_saturation - field_capacity)) * wls
+    end ~ track(max=1)
+
+    "Relative soil water deficit"
+    rθ_def(SW, WP, field_capacity) => begin
+        (SW - WP) / (field_capacity - WP)
+    end ~ track(max=1)
+
     # Relative drought factor from CROPGRO. Used for N_uptake_conversion_factor.
     # Captures water stress due to both drought and water logging through reduction in stomatal conductance
     "Relative soil water content factor"
-    rθ(SW, minSW, field_capacity, soil_saturation, WP, wls) => begin
-        if SW > field_capacity
-            1.0 - ((SW - field_capacity) / (soil_saturation - field_capacity)) * wls
-        else
-            1 * ((SW - WP) / (field_capacity - WP))
-        end
-    end ~ track(min=0.1, max=1) 
+    rθ(SW, field_capacity, rθ_sat, rθ_def) => begin
+        SW > field_capacity ? rθ_sat : rθ_def
+    end ~ track(min=0.1, max=1)
+    # rθ(SW, minSW, field_capacity, soil_saturation, WP, wls) => begin
+    #     if SW > field_capacity
+    #         1.0 - ((SW - field_capacity) / (soil_saturation - field_capacity)) * wls
+    #     else
+    #         1 * ((SW - WP) / (field_capacity - WP))
+    #     end
+    # end ~ track(min=0.1, max=1)
 
     # fθ from 3PG with additional water logging effect
     # cθ and nθ shift curves for differnt soil types, reflecting hydraulic properties (Landsberg & Waring, 1997)
