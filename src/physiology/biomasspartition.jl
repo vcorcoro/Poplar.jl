@@ -39,22 +39,29 @@
     
     pfsConst(pFS2, pfsPower) => pFS2 / 2 ^ pfsPower ~ preserve
 
+    # xTODO: should we reincorporate soil water effect on root allocation? - CC 4/20/26
     # "Stomatal response to VPD"
     # coeffCond => 0.05 ~ preserve(parameter, u"mbar^-1")
 
+    # xTODO: turn on this modifier, replace with our water_stress factor - 4/24/26 Modeling meeting discussion
+    #   DONE -- 4/28/26 CC
     # soil water no longer uses these variables
     # "Soilwater modifier on root partitioning"
     # fSW(ASW, maxASW, SWconst, SWpower) => begin
     #     1 / (1 + ((1 - (ASW / maxASW)) / SWconst) ^ SWpower)
     # end ~ track
 
+    # Leave this off - 4/24/26 Modeling meeting discussion
     # "VPD modifier on root partitioning"
     # fVPD(VPD, coeffCond) => begin
     #     exp(-coeffCond * VPD)
     # end ~ track
 
+    # incorporating SW and Age effects, leaving out VPD - 4/24/26 Modeling meeting
     "Modifier for root partitioning based on VPD, SW, and Age"
-    fPhysiology(fAge) ~ track
+    fPhysiology(fAge, water_stress) => begin
+        water_stress * fAge
+    end ~ track
     # fPhysiology(fVPD, fSW, fAge) => begin
     #     min(fVPD, fSW) * fAge
     # end ~ track
