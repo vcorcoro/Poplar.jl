@@ -73,8 +73,21 @@ Photosynthesis
     "NPP/GPP ratio"
     γ => 0.47 ~ preserve(parameter) # Amichev
 
+    # growth respiration and carbon contents from Grossman & Dejong (1994) - PEACH
+    "Growth respiration coefficient"
+    Gr => 0.211 ~ preserve(parameter #=gCHO/gDW=#) # peach fruit
+    "Carbon content foliage"
+    Cf => 0.453 ~ preserve(parameter #=gC/gDW=#) # peach leaf
+    "Carbon content stem"
+    Cs => 0.475 ~ preserve(parameter #=gC/gDW=#) # peach trunk
+    "Carbon content root"
+    Cr => 0.458 ~ preserve(parameter #=gC/gDW=#) # peach root
+
     "Growth yield"
-    Yg => 0.75 ~ preserve(parameter)
+    Yg(Cf, Cs, Cr, pF, pS, pR, C_weight, CH2O_weight, Gr) => begin
+        1 / ((Cf*pF + Cs*pS + Cr*pR) * (CH2O_weight / C_weight) + Gr) 
+    end ~ track(when=growthFlag) #=gDW/gCHO=#
+    # Yg => 0.75 ~ preserve(parameter)
 
     # 1--constant NPP:GPP ratio (recommended with constant allocation); 
     # 2--dynamic respiration (recommended with allometric allocation types)
