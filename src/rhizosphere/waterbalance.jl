@@ -23,13 +23,17 @@ Transpiration
     soil_saturation(soil_table,soil_class, depth) => begin 
         soil_table[Symbol(soil_class)].saturation
     end ~ preserve(parameter, u"mm")
-   
+
+    field_capacity(soil_table,soil_class) => begin     	
+        soil_table[Symbol(soil_class)].field_capacity
+    end ~ preserve(parameter, u"mm")
+
     wilting_point(soil_table,soil_class) => begin
         soil_table[Symbol(soil_class)].wilting_point
     end ~ preserve(parameter, u"mm")
 
-    field_capacity(soil_table,soil_class) => begin     	
-        soil_table[Symbol(soil_class)].field_capacity
+    minimum_soil_water(soil_table,soil_class) => begin
+        soil_table[Symbol(soil_class)].wilting_point
     end ~ preserve(parameter, u"mm")
 
     ### Soil parameters based on actual soil depth ###
@@ -37,21 +41,21 @@ Transpiration
     maxSW(soil_saturation, depth_multiplier) => begin
         soil_saturation * depth_multiplier
     end ~ preserve(u"mm")
-
+ 
+    "Field capacity" 
+    FC(field_capacity, depth_multiplier) => begin
+        field_capacity * depth_multiplier
+    end ~ preserve(u"mm")
+ 
     "Wilting point"
     WP(wilting_point, depth_multiplier) => begin
         wilting_point * depth_multiplier
     end ~ preserve(u"mm")
 
     "Minimum soil water"
-    minSW(wilting_point, depth_multiplier) => begin
-        wilting_point * depth_multiplier
-    end ~ preserve(u"mm") # TODO: should this be a separate parameter option?
-
-    "Field capacity" 
-    FC(field_capacity, depth_multiplier) => begin
-        field_capacity * depth_multiplier
-    end ~ preserve(u"mm")
+    minSW(minimum_soil_water, depth_multiplier) => begin
+        minimum_soil_water * depth_multiplier
+    end ~ preserve(u"mm") 
 
     ### other parameters ###
 
